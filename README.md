@@ -60,6 +60,20 @@ Para restaurar dados em outro navegador ou maquina, use o botao `Importar`.
 
 Este projeto usa servidor local (`server.js`) e banco em arquivo. Ele nao deve ser publicado apenas com GitHub Pages, porque GitHub Pages nao executa servidor Node.js nem grava banco local.
 
+O link do GitHub Pages pode servir a interface estatica:
+
+[https://nathanlenon.github.io/controle-mensalidades/](https://nathanlenon.github.io/controle-mensalidades/)
+
+Porem, nesse modo, o sistema nao tera o banco central compartilhado em `data/database.json`. Os dados ficam limitados ao armazenamento do navegador usado, como uma versao demonstrativa.
+
+Para ativar o GitHub Pages:
+
+1. Abra o repositorio no GitHub.
+2. Va em `Settings > Pages`.
+3. Em `Build and deployment`, selecione `Deploy from a branch`.
+4. Escolha `Branch: main` e pasta `/root`.
+5. Salve e aguarde a publicacao.
+
 Para hospedar online de verdade, sera necessario adaptar o backend para um ambiente com banco de dados, como:
 
 - Render
