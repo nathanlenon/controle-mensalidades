@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Controle de Mensalidades 2026</title>
+    <link rel="icon" href="assets/Logo_raizjjc.PNG" />
+    <link rel="stylesheet" href="styles.css?v=20260420-7" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand">
+          <button class="brand-mark" id="logoHomeButton" type="button" title="Ir para o Dashboard" aria-label="Ir para o Dashboard">
+            <img src="assets/Logo_raizjjc.PNG" alt="" />
+          </button>
+          <div>
+            <h1>RAIZ JIU JITSU - SIRINHAÉM | Mensalidades 2026</h1>
+            <p id="saveStatus">Dados locais</p>
+          </div>
+        </div>
+
+        <div class="top-actions" aria-label="Acoes globais">
+          <button class="ghost-button" id="importJsonButton" type="button">
+            <span data-icon="upload"></span>
+            Importar
+          </button>
+          <button class="ghost-button" id="exportJsonButton" type="button">
+            <span data-icon="download"></span>
+            Backup
+          </button>
+          <button class="ghost-button" id="newStudentTopButton" type="button">
+            <span data-icon="plus"></span>
+            Aluno
+          </button>
+          <button class="primary-button" id="newPaymentTopButton" type="button">
+            <span data-icon="money"></span>
+            Pagamento
+          </button>
+          <input id="jsonFileInput" class="sr-only" type="file" accept="application/json,.json" />
+        </div>
+      </header>
+
+      <nav class="tabs" aria-label="Navegacao principal">
+        <button class="tab is-active" type="button" data-view="dashboard">
+          <span data-icon="dashboard"></span>
+          Dashboard
+        </button>
+        <button class="tab" type="button" data-view="students">
+          <span data-icon="users"></span>
+          Alunos
+        </button>
+        <button class="tab" type="button" data-view="payments">
+          <span data-icon="receipt"></span>
+          Pagamentos
+        </button>
+        <button class="tab" type="button" data-view="settings">
+          <span data-icon="settings"></span>
+          Config
+        </button>
+      </nav>
+
+      <main id="app" class="content" tabindex="-1"></main>
+    </div>
+
+    <dialog id="studentDialog" class="modal">
+      <form id="studentForm" novalidate>
+        <div class="modal-header">
+          <h2 id="studentDialogTitle">Aluno</h2>
+          <button class="icon-button" data-dialog-close="#studentDialog" type="button" title="Fechar" aria-label="Fechar">
+            <span data-icon="close"></span>
+          </button>
+        </div>
+        <div class="form-grid">
+          <label>
+            Código
+            <input id="studentCode" name="code" type="text" readonly />
+          </label>
+          <label class="wide-field">
+            Nome
+            <input id="studentName" name="name" type="text" autocomplete="off" required />
+          </label>
+          <label>
+            CPF opcional
+            <input id="studentCpf" name="cpf" type="text" inputmode="numeric" autocomplete="off" maxlength="14" placeholder="000.000.000-00" />
+          </label>
+          <label>
+            E-mail opcional
+            <input id="studentEmail" name="email" type="email" autocomplete="off" placeholder="nome@email.com" />
+          </label>
+          <label>
+            Turma
+            <select id="studentGroup" name="group"></select>
+          </label>
+          <label>
+            Matrícula
+            <input id="studentEnrollment" name="enrollment" type="date" required />
+          </label>
+          <label>
+            Vencimento da Mensalidade
+            <input id="studentMonthlyDueDate" name="monthlyDueDate" type="date" />
+          </label>
+          <label>
+            Desligamento
+            <input id="studentLeaveDate" name="leaveDate" type="date" />
+          </label>
+          <label>
+            Cobrar no mês de desligamento?
+            <select id="studentChargeLeave" name="chargeLeave">
+              <option value="true">Sim</option>
+              <option value="false">Não</option>
+            </select>
+          </label>
+        </div>
+        <div class="modal-actions">
+          <button class="ghost-button" data-dialog-close="#studentDialog" type="button">Cancelar</button>
+          <button class="primary-button" id="saveStudentButton" type="submit">
+            <span data-icon="check"></span>
+            Salvar
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="paymentDialog" class="modal">
+      <form id="paymentForm" novalidate>
+        <div class="modal-header">
+          <h2 id="paymentDialogTitle">Pagamento</h2>
+          <button class="icon-button" data-dialog-close="#paymentDialog" type="button" title="Fechar" aria-label="Fechar">
+            <span data-icon="close"></span>
+          </button>
+        </div>
+        <div class="form-grid">
+          <label class="wide-field">
+            Buscar aluno
+            <input id="paymentStudentSearch" type="search" maxlength="120" autocomplete="off" placeholder="Código, nome, CPF ou e-mail" />
+          </label>
+          <label class="wide-field">
+            Aluno
+            <select id="paymentStudent" name="student" required></select>
+          </label>
+          <label>
+            Mês
+            <select id="paymentMonth" name="month" required></select>
+          </label>
+          <label>
+            Valor pago
+            <input id="paymentAmount" name="amount" type="number" step="0.01" min="0" inputmode="decimal" required />
+          </label>
+          <label>
+            Forma
+            <select id="paymentMethod" name="method" required></select>
+          </label>
+          <label>
+            Data do pagamento
+            <input id="paymentDate" name="paidAt" type="date" required />
+          </label>
+          <label class="wide-field">
+            Observação
+            <input id="paymentNote" name="note" type="text" autocomplete="off" />
+          </label>
+        </div>
+        <p id="duplicateAlert" class="inline-alert" hidden></p>
+        <div class="modal-actions">
+          <button class="ghost-button" data-dialog-close="#paymentDialog" type="button">Cancelar</button>
+          <button class="primary-button" id="savePaymentButton" type="submit">
+            <span data-icon="check"></span>
+            Salvar
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+    <script src="app.js?v=20260420-7" defer></script>
+  </body>
+</html>

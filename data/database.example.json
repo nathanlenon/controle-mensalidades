@@ -1,0 +1,67 @@
+{
+  "state": {
+    "students": [
+      {
+        "code": "A0001",
+        "name": "Aluno Exemplo",
+        "cpf": "",
+        "email": "aluno@example.com",
+        "group": "Adulto - Tarde",
+        "enrollment": "2026-01-01",
+        "monthlyDueDate": "2026-01-10",
+        "leaveDate": "",
+        "chargeLeaveMonth": true
+      }
+    ],
+    "payments": [
+      {
+        "id": "P exemplo",
+        "studentCode": "A0001",
+        "studentName": "Aluno Exemplo",
+        "month": 1,
+        "amount": 100,
+        "method": "Pix",
+        "paidAt": "2026-01-10",
+        "note": "Pagamento de exemplo",
+        "createdAt": "2026-01-10T12:00:00.000Z"
+      }
+    ],
+    "settings": {
+      "groups": [
+        "Adulto - Tarde",
+        "Adulto - Noite",
+        "Crianças - Tarde",
+        "Baby - Tarde"
+      ],
+      "methods": [
+        "Dinheiro",
+        "Crédito",
+        "Débito",
+        "Pix"
+      ],
+      "defaultAmount": 0,
+      "referenceMonth": 1,
+      "reference": "2026-01"
+    }
+  },
+  "history": [
+    {
+      "id": "H exemplo",
+      "appVersion": "example",
+      "createdAt": "2026-01-10T12:00:00.000Z",
+      "action": "student.created",
+      "entity": "student",
+      "entityId": "A0001",
+      "summary": "A0001 · Aluno Exemplo",
+      "before": null,
+      "after": {
+        "code": "A0001",
+        "name": "Aluno Exemplo"
+      }
+    }
+  ],
+  "meta": {
+    "createdAt": "2026-01-10T12:00:00.000Z",
+    "updatedAt": "2026-01-10T12:00:00.000Z"
+  }
+}

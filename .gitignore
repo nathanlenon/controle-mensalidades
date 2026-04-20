@@ -1,0 +1,17 @@
+# Banco local com dados reais
+data/database.json
+
+# Logs locais do servidor
+*.log
+server.out.log
+server.err.log
+
+# Dependências locais, caso sejam instaladas futuramente
+node_modules/
+
+# Arquivos temporários de sistema/editor
+.DS_Store
+Thumbs.db
+
+# Capturas usadas apenas para validação local
+verification-*.png
