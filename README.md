@@ -136,6 +136,36 @@ Referencias:
 - [Supabase Billing](https://supabase.com/docs/guides/platform/billing-on-supabase)
 - [Supabase Connection Strings](https://supabase.com/docs/reference/postgres/connection-strings)
 
+## Hospedagem Gratuita no Netlify
+
+O projeto tambem esta preparado para Netlify:
+
+- `netlify.toml` publica a interface estatica em `dist`.
+- `scripts/build-netlify.js` copia apenas os arquivos publicos.
+- `netlify/functions/api.js` responde as rotas `/api/state`, `/api/history` e `/api/health`.
+- O banco online continua sendo o Supabase via `DATABASE_URL`.
+
+Passo a passo:
+
+1. Crie um projeto gratuito no Supabase.
+2. No Supabase, clique em `Connect` e copie a string `Session pooler`.
+3. No Netlify, clique em `Add new project > Import an existing project`.
+4. Conecte o GitHub e selecione `nathanlenon/controle-mensalidades`.
+5. Confirme as configuracoes detectadas pelo `netlify.toml`:
+   - Build command: `npm run build:netlify`
+   - Publish directory: `dist`
+   - Functions directory: `netlify/functions`
+6. Em `Site configuration > Environment variables`, adicione:
+   - `DATABASE_URL`: string `Session pooler` do Supabase com a senha preenchida.
+7. Faca o deploy.
+
+No Netlify, variaveis como `DATABASE_URL` devem ser cadastradas no painel, nao no `netlify.toml`, para ficarem disponiveis nas Functions.
+
+Referencias:
+
+- [Netlify Functions environment variables](https://docs.netlify.com/functions/environment-variables/)
+- [Netlify redirects](https://docs.netlify.com/routing/redirects/)
+
 ## Privacidade
 
 Antes de publicar qualquer versao do projeto:

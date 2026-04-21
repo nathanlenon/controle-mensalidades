@@ -9,6 +9,9 @@ server.err.log
 # Dependências locais, caso sejam instaladas futuramente
 node_modules/
 
+# Build estatico gerado para Netlify
+dist/
+
 # Arquivos temporários de sistema/editor
 .DS_Store
 Thumbs.db
