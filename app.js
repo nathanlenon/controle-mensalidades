@@ -4,7 +4,7 @@ const VIEW_KEY = "controle-mensalidades-2026-current-view";
 const HISTORY_DB_NAME = "raiz-jjc-controle-db";
 const HISTORY_DB_VERSION = 1;
 const HISTORY_STORE = "changeLog";
-const APP_VERSION = "20260420-8";
+const APP_VERSION = "20260421-1";
 const API_PORT = 4173;
 const API_BASE = location.protocol === "file:" ? `http://127.0.0.1:${API_PORT}` : "";
 
@@ -1494,6 +1494,9 @@ function getBackendErrorMessage(error) {
   const message = String(error?.message || "");
   if (message.includes("DATABASE_URL")) {
     return "Banco online sem DATABASE_URL";
+  }
+  if (message.includes("password authentication failed")) {
+    return "Senha do banco online incorreta";
   }
   if (location.protocol === "file:") {
     return "Servidor local não conectado";

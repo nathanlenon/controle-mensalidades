@@ -236,6 +236,9 @@ async function handleApi(req, res, url) {
   }
 
   if (url.pathname === "/api/health" && req.method === "GET") {
+    if (DATABASE_URL) {
+      await readDb();
+    }
     jsonResponse(res, 200, {
       ok: true,
       storage: DATABASE_URL ? "postgres" : process.env.DATABASE_FILE ? "external" : "local",

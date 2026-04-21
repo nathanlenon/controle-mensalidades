@@ -219,6 +219,9 @@ exports.handler = async function handler(event) {
     const path = getApiPath(event);
 
     if (path === "/api/health" && event.httpMethod === "GET") {
+      if (process.env.DATABASE_URL) {
+        await readDb();
+      }
       return jsonResponse(200, {
         ok: true,
         storage: process.env.DATABASE_URL ? "postgres" : "missing-database-url",
