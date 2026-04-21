@@ -8,8 +8,10 @@ const PORT = Number(process.env.PORT || 4173);
 const HOST = process.env.HOST || (process.env.RENDER ? "0.0.0.0" : "127.0.0.1");
 const DB_PATH = path.resolve(process.env.DATABASE_FILE || path.join(ROOT, "data", "database.json"));
 const DATA_DIR = path.dirname(DB_PATH);
+const DATABASE_URL = process.env.DATABASE_URL || "";
 const HISTORY_LIMIT = 5000;
 let dbQueue = Promise.resolve();
+let pgPool;
 
 const seedState = {
   students: [
@@ -74,34 +76,101 @@ function notFound(res) {
   res.end("Not found");
 }
 
+function createSeedDb() {
+  const now = new Date().toISOString();
+  return {
+    state: seedState,
+    history: [],
+    meta: {
+      createdAt: now,
+      updatedAt: now,
+    },
+  };
+}
+
+function normalizeDb(db) {
+  return {
+    state: sanitizeState(db.state || seedState),
+    history: Array.isArray(db.history) ? db.history : [],
+    meta: db.meta || {},
+  };
+}
+
+function getPgPool() {
+  if (!pgPool) {
+    let Pool;
+    try {
+      ({ Pool } = require("pg"));
+    } catch (error) {
+      throw new Error("A dependencia 'pg' nao foi instalada. Execute 'npm install' antes de usar DATABASE_URL.");
+    }
+    pgPool = new Pool({
+      connectionString: DATABASE_URL,
+      ssl: process.env.PGSSLMODE === "disable" ? false : { rejectUnauthorized: false },
+    });
+  }
+  return pgPool;
+}
+
+async function ensurePostgresDb() {
+  const pool = getPgPool();
+  await pool.query(`
+    create table if not exists app_store (
+      id text primary key,
+      payload jsonb not null,
+      updated_at timestamptz not null default now()
+    )
+  `);
+  await pool.query(
+    `
+      insert into app_store (id, payload, updated_at)
+      values ($1, $2::jsonb, now())
+      on conflict (id) do nothing
+    `,
+    ["default", JSON.stringify(createSeedDb())],
+  );
+}
+
 async function ensureDb() {
+  if (DATABASE_URL) {
+    await ensurePostgresDb();
+    return;
+  }
   await fs.mkdir(DATA_DIR, { recursive: true });
   if (!existsSync(DB_PATH)) {
-    await writeDb({
-      state: seedState,
-      history: [],
-      meta: {
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-    });
+    await writeDb(createSeedDb());
   }
 }
 
 async function readDb() {
   await ensureDb();
+  if (DATABASE_URL) {
+    const pool = getPgPool();
+    const result = await pool.query("select payload from app_store where id = $1", ["default"]);
+    return normalizeDb(result.rows[0]?.payload || createSeedDb());
+  }
   const raw = await fs.readFile(DB_PATH, "utf8");
   const parsed = JSON.parse(raw);
-  return {
-    state: sanitizeState(parsed.state || seedState),
-    history: Array.isArray(parsed.history) ? parsed.history : [],
-    meta: parsed.meta || {},
-  };
+  return normalizeDb(parsed);
 }
 
 async function writeDb(db) {
+  if (DATABASE_URL) {
+    await ensurePostgresDb();
+    const pool = getPgPool();
+    await pool.query(
+      `
+        insert into app_store (id, payload, updated_at)
+        values ($1, $2::jsonb, now())
+        on conflict (id)
+        do update set payload = excluded.payload, updated_at = now()
+      `,
+      ["default", JSON.stringify(normalizeDb(db))],
+    );
+    return;
+  }
   await fs.mkdir(DATA_DIR, { recursive: true });
-  const payload = JSON.stringify(db, null, 2);
+  const payload = JSON.stringify(normalizeDb(db), null, 2);
   const tempPath = `${DB_PATH}.tmp`;
   await fs.writeFile(tempPath, payload, "utf8");
   await fs.rename(tempPath, DB_PATH);
@@ -169,7 +238,7 @@ async function handleApi(req, res, url) {
   if (url.pathname === "/api/health" && req.method === "GET") {
     jsonResponse(res, 200, {
       ok: true,
-      storage: process.env.DATABASE_FILE ? "external" : "local",
+      storage: DATABASE_URL ? "postgres" : process.env.DATABASE_FILE ? "external" : "local",
     });
     return;
   }

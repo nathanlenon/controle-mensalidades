@@ -50,6 +50,8 @@ Um exemplo sem dados reais fica em:
 data/database.example.json
 ```
 
+Em producao, se a variavel `DATABASE_URL` existir, o sistema usa Postgres em vez do arquivo `data/database.json`.
+
 ## Backup
 
 Dentro do sistema, use o botao `Backup` para exportar uma copia JSON dos dados.
@@ -74,7 +76,7 @@ Para ativar o GitHub Pages:
 4. Escolha `Branch: main` e pasta `/root`.
 5. Salve e aguarde a publicacao.
 
-Para hospedar online de verdade, sera necessario adaptar o backend para um ambiente com banco de dados, como:
+Para hospedar online de verdade, use um ambiente com backend Node.js e banco externo, como:
 
 - Render
 - Railway
@@ -82,39 +84,57 @@ Para hospedar online de verdade, sera necessario adaptar o backend para um ambie
 - VPS
 - Supabase/Postgres
 
-## Hospedagem Completa no Render
+## Hospedagem Gratuita
 
-O projeto ja inclui os arquivos necessarios para publicar o sistema completo no Render:
+A opcao gratuita recomendada para este projeto e:
+
+- Render Free: hospeda o servidor Node.js.
+- Supabase Free: guarda o banco Postgres.
+
+Essa combinacao evita depender de arquivos locais no servidor. Em hospedagens gratuitas, arquivos gravados no disco podem sumir em reinicios, pausas ou novos deploys.
+
+O projeto ja inclui os arquivos necessarios:
 
 - `package.json`, com o comando `npm start`.
-- `render.yaml`, com um Web Service Node.js e disco persistente.
-- `server.js`, preparado para usar `PORT`, `HOST` e `DATABASE_FILE`.
+- `render.yaml`, com um Web Service Node.js no plano gratuito.
+- `server.js`, preparado para usar `PORT`, `HOST` e `DATABASE_URL`.
 
 Configuracao usada em producao:
 
 ```text
 Start Command: npm start
 Health Check Path: /api/health
-DATABASE_FILE: /var/data/database.json
-Disco persistente: /var/data
+DATABASE_URL: string de conexao do Postgres/Supabase
 ```
 
 Passo a passo recomendado:
 
-1. Crie ou acesse sua conta no Render.
-2. Clique em `New > Blueprint`.
-3. Conecte o repositorio `nathanlenon/controle-mensalidades`.
-4. Confirme o arquivo `render.yaml`.
-5. Revise o plano e crie o servico.
-6. Aguarde o deploy terminar e abra a URL `.onrender.com`.
+1. Crie uma conta gratuita no Supabase.
+2. Crie um projeto no Supabase.
+3. Clique em `Connect` no Supabase e copie a string `Session pooler`.
+4. Crie uma conta gratuita no Render.
+5. Clique em `New > Blueprint`.
+6. Conecte o repositorio `nathanlenon/controle-mensalidades`.
+7. Confirme o arquivo `render.yaml`.
+8. Quando o Render pedir a variavel `DATABASE_URL`, cole a string `Session pooler` do Supabase e substitua `[YOUR-PASSWORD]` pela senha do banco.
+9. Aguarde o deploy terminar e abra a URL `.onrender.com`.
 
-Atencao: para manter o banco salvo online, o servico precisa de disco persistente. Sem disco persistente, alteracoes feitas em arquivos podem ser perdidas em reinicios ou novos deploys.
+O sistema cria automaticamente a tabela `app_store` no Postgres no primeiro acesso.
+
+Limites importantes do gratuito:
+
+- Render Free pode pausar o servidor depois de alguns minutos sem acesso. O primeiro acesso apos pausa pode demorar.
+- Render Free nao tem disco persistente; por isso o banco fica no Supabase.
+- Render pode precisar da string `Session pooler` do Supabase porque conexoes diretas do Supabase usam IPv6 por padrao.
+- Supabase Free tem limite de banco de dados. Para este sistema, o uso esperado deve caber bem no plano gratuito.
 
 Referencias:
 
+- [Render Free](https://render.com/docs/free)
 - [Render Web Services](https://render.com/docs/web-services)
-- [Render Persistent Disks](https://render.com/docs/disks)
 - [Render Blueprint YAML](https://render.com/docs/blueprint-spec)
+- [Supabase Billing](https://supabase.com/docs/guides/platform/billing-on-supabase)
+- [Supabase Connection Strings](https://supabase.com/docs/reference/postgres/connection-strings)
 
 ## Privacidade
 
