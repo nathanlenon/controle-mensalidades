@@ -4,7 +4,7 @@ const VIEW_KEY = "controle-mensalidades-2026-current-view";
 const HISTORY_DB_NAME = "raiz-jjc-controle-db";
 const HISTORY_DB_VERSION = 1;
 const HISTORY_STORE = "changeLog";
-const APP_VERSION = "20260421-1";
+const APP_VERSION = "20260421-2";
 const API_PORT = 4173;
 const API_BASE = location.protocol === "file:" ? `http://127.0.0.1:${API_PORT}` : "";
 
@@ -332,7 +332,7 @@ function renderStudents() {
     </section>
 
     <div class="table-shell">
-      <table>
+      <table class="data-table students-table mobile-card-table">
         <thead>
           <tr>
             <th class="code-col">Código</th>
@@ -355,16 +355,16 @@ function renderStudents() {
                     const status = getStudentListStatus(student);
                     return `
                       <tr>
-                        <td>${escapeHtml(student.code)}</td>
-                        <td class="student-name-cell"><strong>${escapeHtml(student.name)}</strong></td>
-                        <td>${escapeHtml(formatCpf(student.cpf) || "-")}</td>
-                        <td>${student.email ? `<a href="mailto:${escapeAttr(student.email)}">${escapeHtml(student.email)}</a>` : "-"}</td>
-                        <td>${escapeHtml(student.group || "Sem turma")}</td>
-                        <td>${formatDate(student.enrollment)}</td>
-                        <td>${student.monthlyDueDate ? formatDate(student.monthlyDueDate) : "-"}</td>
-                        <td>${student.leaveDate ? formatDate(student.leaveDate) : "-"}</td>
-                        <td>${renderStatusPill(status)}</td>
-                        <td>
+                        <td data-label="Código">${escapeHtml(student.code)}</td>
+                        <td data-label="Nome" class="student-name-cell"><strong>${escapeHtml(student.name)}</strong></td>
+                        <td data-label="CPF">${escapeHtml(formatCpf(student.cpf) || "-")}</td>
+                        <td data-label="E-mail">${student.email ? `<a href="mailto:${escapeAttr(student.email)}">${escapeHtml(student.email)}</a>` : "-"}</td>
+                        <td data-label="Turma">${escapeHtml(student.group || "Sem turma")}</td>
+                        <td data-label="Matrícula">${formatDate(student.enrollment)}</td>
+                        <td data-label="Vencimento">${student.monthlyDueDate ? formatDate(student.monthlyDueDate) : "-"}</td>
+                        <td data-label="Desligamento">${student.leaveDate ? formatDate(student.leaveDate) : "-"}</td>
+                        <td data-label="Status">${renderStatusPill(status)}</td>
+                        <td data-label="Ações" class="actions-cell">
                           <div class="inline-actions">
                             <button class="icon-button" type="button" data-action="edit-student" data-code="${student.code}" title="Editar" aria-label="Editar ${escapeAttr(student.name)}"><span data-icon="edit"></span></button>
                             <button class="icon-button" type="button" data-action="delete-student" data-code="${student.code}" title="Excluir" aria-label="Excluir ${escapeAttr(student.name)}"><span data-icon="trash"></span></button>
@@ -423,7 +423,7 @@ function renderPayments() {
     </section>
 
     <div class="table-shell">
-      <table>
+      <table class="data-table payments-table mobile-card-table">
         <thead>
           <tr>
             <th>Data</th>
@@ -549,7 +549,7 @@ function renderHistoryTable() {
   }
   return `
     <div class="table-shell">
-      <table>
+      <table class="data-table history-table mobile-card-table">
         <thead>
           <tr>
             <th>Data</th>
@@ -563,10 +563,10 @@ function renderHistoryTable() {
             .map(
               (entry) => `
                 <tr>
-                  <td>${formatDateTime(entry.createdAt)}</td>
-                  <td>${escapeHtml(formatHistoryAction(entry.action))}</td>
-                  <td>${escapeHtml(entry.entityId || "-")}</td>
-                  <td>${escapeHtml(entry.summary || "-")}</td>
+                  <td data-label="Data">${formatDateTime(entry.createdAt)}</td>
+                  <td data-label="Ação">${escapeHtml(formatHistoryAction(entry.action))}</td>
+                  <td data-label="Registro">${escapeHtml(entry.entityId || "-")}</td>
+                  <td data-label="Detalhes">${escapeHtml(entry.summary || "-")}</td>
                 </tr>
               `,
             )
@@ -647,7 +647,7 @@ function renderPendingList(items) {
 
 function renderDashboardTable(students) {
   return `
-    <table>
+    <table class="data-table dashboard-table mobile-card-table">
       <thead>
         <tr>
           <th class="sticky-col code-col">Código</th>
@@ -665,14 +665,14 @@ function renderDashboardTable(students) {
                   const status = getDashboardStudentStatus(student);
                   return `
                     <tr>
-                      <td class="sticky-col code-col">${escapeHtml(student.code)}</td>
-                      <td class="student-name-cell"><strong>${escapeHtml(student.name)}</strong><small>${formatDate(student.enrollment)}</small></td>
-                      <td>${escapeHtml(student.group || "Sem turma")}</td>
-                      <td>${renderStatusPill(status)}</td>
+                      <td data-label="Código" class="sticky-col code-col">${escapeHtml(student.code)}</td>
+                      <td data-label="Nome" class="student-name-cell"><strong>${escapeHtml(student.name)}</strong><small>${formatDate(student.enrollment)}</small></td>
+                      <td data-label="Turma">${escapeHtml(student.group || "Sem turma")}</td>
+                      <td data-label="Status">${renderStatusPill(status)}</td>
                       ${monthNames
                         .map((_, index) => {
                           const month = index + 1;
-                          return `<td class="month-col">${renderMonthChip(student, month)}</td>`;
+                          return `<td data-label="${monthNames[index]}" class="month-col">${renderMonthChip(student, month)}</td>`;
                         })
                         .join("")}
                     </tr>
@@ -693,17 +693,17 @@ function renderPaymentRow(payment) {
   ).length;
   return `
     <tr>
-      <td>${formatDate(payment.paidAt)}</td>
-      <td>${escapeHtml(payment.studentCode)}</td>
-      <td class="student-name-cell">
+      <td data-label="Data">${formatDate(payment.paidAt)}</td>
+      <td data-label="Código">${escapeHtml(payment.studentCode)}</td>
+      <td data-label="Aluno" class="student-name-cell">
         <strong>${escapeHtml(student?.name || payment.studentName || "Aluno não encontrado")}</strong>
         <small>${escapeHtml(student?.group || "Sem turma")}</small>
       </td>
-      <td>${monthNames[payment.month - 1]}</td>
-      <td class="amount">${formatCurrency(Number(payment.amount || 0))}</td>
-      <td>${escapeHtml(payment.method)}</td>
-      <td>${duplicateCount > 1 ? `<span class="status-pill status-bad">Duplicado</span>` : ""}</td>
-      <td>
+      <td data-label="Mês">${monthNames[payment.month - 1]}</td>
+      <td data-label="Valor" class="amount">${formatCurrency(Number(payment.amount || 0))}</td>
+      <td data-label="Forma">${escapeHtml(payment.method)}</td>
+      <td data-label="Alerta">${duplicateCount > 1 ? `<span class="status-pill status-bad">Duplicado</span>` : "-"}</td>
+      <td data-label="Ações" class="actions-cell">
         <div class="inline-actions">
           <button class="icon-button" type="button" data-action="edit-payment" data-id="${payment.id}" title="Editar" aria-label="Editar pagamento"><span data-icon="edit"></span></button>
           <button class="icon-button" type="button" data-action="delete-payment" data-id="${payment.id}" title="Excluir" aria-label="Excluir pagamento"><span data-icon="trash"></span></button>
