@@ -82,6 +82,40 @@ Para hospedar online de verdade, sera necessario adaptar o backend para um ambie
 - VPS
 - Supabase/Postgres
 
+## Hospedagem Completa no Render
+
+O projeto ja inclui os arquivos necessarios para publicar o sistema completo no Render:
+
+- `package.json`, com o comando `npm start`.
+- `render.yaml`, com um Web Service Node.js e disco persistente.
+- `server.js`, preparado para usar `PORT`, `HOST` e `DATABASE_FILE`.
+
+Configuracao usada em producao:
+
+```text
+Start Command: npm start
+Health Check Path: /api/health
+DATABASE_FILE: /var/data/database.json
+Disco persistente: /var/data
+```
+
+Passo a passo recomendado:
+
+1. Crie ou acesse sua conta no Render.
+2. Clique em `New > Blueprint`.
+3. Conecte o repositorio `nathanlenon/controle-mensalidades`.
+4. Confirme o arquivo `render.yaml`.
+5. Revise o plano e crie o servico.
+6. Aguarde o deploy terminar e abra a URL `.onrender.com`.
+
+Atencao: para manter o banco salvo online, o servico precisa de disco persistente. Sem disco persistente, alteracoes feitas em arquivos podem ser perdidas em reinicios ou novos deploys.
+
+Referencias:
+
+- [Render Web Services](https://render.com/docs/web-services)
+- [Render Persistent Disks](https://render.com/docs/disks)
+- [Render Blueprint YAML](https://render.com/docs/blueprint-spec)
+
 ## Privacidade
 
 Antes de publicar qualquer versao do projeto:

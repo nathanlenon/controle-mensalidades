@@ -3,10 +3,11 @@ const fs = require("node:fs/promises");
 const path = require("node:path");
 const { existsSync } = require("node:fs");
 
-const PORT = Number(process.env.PORT || 4173);
 const ROOT = __dirname;
-const DATA_DIR = path.join(ROOT, "data");
-const DB_PATH = path.join(DATA_DIR, "database.json");
+const PORT = Number(process.env.PORT || 4173);
+const HOST = process.env.HOST || (process.env.RENDER ? "0.0.0.0" : "127.0.0.1");
+const DB_PATH = path.resolve(process.env.DATABASE_FILE || path.join(ROOT, "data", "database.json"));
+const DATA_DIR = path.dirname(DB_PATH);
 const HISTORY_LIMIT = 5000;
 let dbQueue = Promise.resolve();
 
@@ -166,7 +167,10 @@ async function handleApi(req, res, url) {
   }
 
   if (url.pathname === "/api/health" && req.method === "GET") {
-    jsonResponse(res, 200, { ok: true });
+    jsonResponse(res, 200, {
+      ok: true,
+      storage: process.env.DATABASE_FILE ? "external" : "local",
+    });
     return;
   }
 
@@ -262,6 +266,7 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, "127.0.0.1", () => {
-  console.log(`Raiz JJC Mensalidades rodando em http://127.0.0.1:${PORT}`);
+server.listen(PORT, HOST, () => {
+  const displayHost = HOST === "0.0.0.0" ? "127.0.0.1" : HOST;
+  console.log(`Raiz JJC Mensalidades rodando em http://${displayHost}:${PORT}`);
 });
