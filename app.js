@@ -4,7 +4,7 @@ const VIEW_KEY = "controle-mensalidades-2026-current-view";
 const HISTORY_DB_NAME = "raiz-jjc-controle-db";
 const HISTORY_DB_VERSION = 1;
 const HISTORY_STORE = "changeLog";
-const APP_VERSION = "20260420-7";
+const APP_VERSION = "20260420-8";
 const API_PORT = 4173;
 const API_BASE = location.protocol === "file:" ? `http://127.0.0.1:${API_PORT}` : "";
 
@@ -1425,9 +1425,7 @@ async function initializeBackendSync() {
     historyEntries = Array.isArray(remote.history) ? remote.history : [];
   } catch (error) {
     backendAvailable = false;
-    backendError = location.protocol === "file:"
-      ? "Servidor local não conectado"
-      : "Servidor local indisponível";
+    backendError = getBackendErrorMessage(error);
   }
 }
 
@@ -1439,10 +1437,19 @@ async function fetchApi(path, options = {}) {
       ...(options.headers || {}),
     },
   });
-  if (!response.ok) {
-    throw new Error(`API ${response.status}`);
+  const text = await response.text();
+  let payload = {};
+  if (text) {
+    try {
+      payload = JSON.parse(text);
+    } catch (error) {
+      payload = { error: text };
+    }
   }
-  return response.json();
+  if (!response.ok) {
+    throw new Error(payload.error || `API ${response.status}`);
+  }
+  return payload;
 }
 
 async function pushStateToServer(nextState) {
@@ -1480,7 +1487,31 @@ function isStateMeaningful(candidate) {
 }
 
 function shouldTryBackend() {
-  return backendAvailable || location.protocol !== "file:" || API_BASE !== "";
+  return backendAvailable || (!backendError && (location.protocol !== "file:" || API_BASE !== ""));
+}
+
+function getBackendErrorMessage(error) {
+  const message = String(error?.message || "");
+  if (message.includes("DATABASE_URL")) {
+    return "Banco online sem DATABASE_URL";
+  }
+  if (location.protocol === "file:") {
+    return "Servidor local não conectado";
+  }
+  if (location.hostname.endsWith(".netlify.app")) {
+    return "Banco online indisponível no Netlify";
+  }
+  if (location.hostname.endsWith(".onrender.com")) {
+    return "Banco online indisponível no Render";
+  }
+  return "Servidor indisponível";
+}
+
+function getBackendSourceLabel() {
+  if (location.hostname.endsWith(".netlify.app")) return "Banco online";
+  if (location.hostname.endsWith(".onrender.com")) return "Banco online";
+  if (["127.0.0.1", "localhost"].includes(location.hostname)) return "Banco local compartilhado";
+  return "Banco compartilhado";
 }
 
 function mergeLocalIntoRemote(remoteState, localState) {
@@ -1851,7 +1882,7 @@ function saveState(options = {}) {
     if (!options.localOnly && shouldTryBackend()) {
       void pushStateToServer(state).catch((error) => {
         backendAvailable = false;
-        backendError = "Falha ao sincronizar com o servidor local";
+        backendError = getBackendErrorMessage(error);
         updateSaveStatus();
         console.error(error);
       });
@@ -1881,7 +1912,7 @@ function updateSaveStatus() {
     status.textContent = `${backendError} · modo navegador · ${summary}`;
     return;
   }
-  const source = backendAvailable ? "Banco local compartilhado" : "Dados deste navegador";
+  const source = backendAvailable ? getBackendSourceLabel() : "Dados deste navegador";
   status.textContent = `${lastSavedAt ? `Salvo às ${lastSavedAt}` : source} · ${summary}`;
 }
 
